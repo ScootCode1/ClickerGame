@@ -10,7 +10,7 @@ def create_blank_window(width, height):
 
     window_size = (width, height)
     screen = pygame.display.set_mode(window_size)
-    pygame.display.set_caption("Blank Window")
+    pygame.display.set_caption("Clicker Game")
 
     # Button properties
     button_width = 200
@@ -40,15 +40,19 @@ def create_blank_window(width, height):
 
     # Function to save the game state as a .sgf file
     def save_game_state(filename):
-        with open(filename, "w") as file:
+        save_path = os.path.join(os.path.expanduser("~"), "Saved Games", "saved_game.txt")
+        with open(save_path, "w") as file:
             for key, value in game_state.items():
                 file.write(f"{key} = {value}\n")
 
-    # Function to load the game state from a .sgf file
+# Function to load the game state from a .txt file
     def load_game_state():
         try:
             Tk().withdraw()  # Hide the main tkinter window
-            file_path = filedialog.askopenfilename(initialdir="C:/Users/donal/Saved Games", title="Select a saved game file", filetypes=[("Saved Game Files", "*.txt")])
+            initial_dir = os.path.join(os.path.expanduser("~"), "Saved Games")
+            file_path = filedialog.askopenfilename(initialdir=initial_dir,
+                                                  title="Select a saved game file",
+                                                  filetypes=[("Saved Game Files", "*.txt")])
             if file_path:
                 with open(file_path, "r") as file:
                     data = file.read().splitlines()
@@ -65,7 +69,7 @@ def create_blank_window(width, height):
                             if key == "Score":
                                 game_state["Score"] = value
                             elif key == "Score per click":
-                                    game_state["Score per click"] = value
+                                game_state["Score per click"] = value
                             elif key == "SPS":
                                 game_state["SPS"] = value
                             else:
@@ -75,7 +79,7 @@ def create_blank_window(width, height):
         except FileNotFoundError:
             print("Saved game not found. Starting a new game.")
 
-    # Helper function to handle score per click
+        # Helper function to handle score per click
     def handle_score_per_click(click_count):
         nonlocal game_state  # Mark 'game_state' as nonlocal since we are modifying it
         # The cost per score per click upgrade
@@ -112,8 +116,9 @@ def create_blank_window(width, height):
                 elif load_button_rect.collidepoint(event.pos):
                     load_game_state()
                 elif score_per_second_button_rect.collidepoint(event.pos):
-                    game_state['SPS'] += 1
-                    game_state['Score'] -= 10
+                    if game_state["Score"] >=10:
+                        game_state['SPS'] += 1
+                        game_state['Score'] -= 10
 
         # Calculate the time difference since the last update
         current_time = time.time()
